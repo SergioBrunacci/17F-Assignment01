@@ -1,21 +1,24 @@
-var SERVER_NAME = 'patient-api'
-var PORT = 8000;
+var SERVER_product = 'product-api'
+var PORT = 3000;
 var HOST = '127.0.0.1';
+var logger = require('morgan')
+var get = 0;
+var post = 0;
 
 
 var restify = require('restify')
 
-  // Get a persistence engine for the patients
-  , patientsSave = require('save')('patients')
+  // Get a persistence engine for the products
+  , productsSave = require('save')('products')
 
   // Create the restify server
-  , server = restify.createServer({ name: SERVER_NAME})
+  , server = restify.createServer({ product: SERVER_product})
 
   server.listen(PORT, HOST, function () {
-  console.log('Server %s listening at %s', server.name, server.url)
+  console.log('Server %s listening at %s', server.product, server.url)
   console.log('Resources:')
-  console.log(' /patients')
-  console.log(' /patients/:id')  
+  console.log(' /products')
+  console.log(' /products/:id')
 })
 
 server
@@ -24,86 +27,92 @@ server
 
   // Maps req.body to req.params so there is no switching between them
   .use(restify.bodyParser())
+  .use(logger('dev'))
 
-// Get all patients in the system
-server.get('/patients', function (req, res, next) {
+// Get all products in the system
+server.get('/products', function (req, res, next) {
+  get = get + 1;
+  console.log(`Get count: ` + get)
 
   // Find every entity within the given collection
-  patientsSave.find({}, function (error, patients) {
+  productsSave.find({}, function (error, products) {
 
-    // Return all of the patients in the system
-    res.send(patients)
+    // Return all of the products in the system
+    res.send(products)
+  
   })
 })
 
-// Get a single patient by their patient id
-server.get('/patients/:id', function (req, res, next) {
+// Get a single product by their product id
+server.get('/products/:id', function (req, res, next) {
 
-  // Find a single patient by their id within save
-  patientsSave.findOne({ _id: req.params.id }, function (error, patient) {
+  // Find a single product by their id within save
+  productsSave.findOne({ _id: req.params.id }, function (error, product) {
 
     // If there are any errors, pass them to next in the correct format
     if (error) return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)))
 
-    if (patient) {
-      // Send the patient if no issues
-      res.send(patient)
+    if (product) {
+      // Send the product if no issues
+      res.send(product)
     } else {
-      // Send 404 header if the patient doesn't exist
+      // Send 404 header if the product doesn't exist
       res.send(404)
     }
   })
 })
 
-// Create a new patient
-server.post('/patients', function (req, res, next) {
+// Create a new product
+server.post('/products', function (req, res, next) {
+  post = post + 1;
+  console.log('Post count: ' + post)
 
-  // Make sure name is defined
-  if (req.params.name === undefined ) {
+  // Make sure product is defined
+  if (req.params.product === undefined ) {
     // If there are any errors, pass them to next in the correct format
-    return next(new restify.InvalidArgumentError('name must be supplied'))
+    return next(new restify.InvalidArgumentError('product must be supplied'))
   }
-  if (req.params.age === undefined ) {
+  if (req.params.price === undefined ) {
     // If there are any errors, pass them to next in the correct format
-    return next(new restify.InvalidArgumentError('age must be supplied'))
+    return next(new restify.InvalidArgumentError('price must be supplied'))
   }
-  var newpatient = {
-		name: req.params.name, 
-		age: req.params.age
+  var newproduct = {
+		product: req.params.product, 
+		price: req.params.price
 	}
 
-  // Create the patient using the persistence engine
-  patientsSave.create( newpatient, function (error, patient) {
+  // Create the product using the persistence engine
+  productsSave.create( newproduct, function (error, product) {
 
     // If there are any errors, pass them to next in the correct format
     if (error) return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)))
 
-    // Send the patient if no issues
-    res.send(201, patient)
+    // Send the product if no issues
+    res.send(201, product)
   })
 })
 
-// Update a patient by their id
-server.put('/patients/:id', function (req, res, next) {
+// Update a product by their id
+server.put('/products/:id', function (req, res, next) {
 
-  // Make sure name is defined
-  if (req.params.name === undefined ) {
+  // Make sure product is defined
+  if (req.params.product === undefined ) {
     // If there are any errors, pass them to next in the correct format
-    return next(new restify.InvalidArgumentError('name must be supplied'))
+    return next(new restify.InvalidArgumentError('product must be supplied'))
   }
-  if (req.params.age === undefined ) {
+  if (req.params.price === undefined ) {
     // If there are any errors, pass them to next in the correct format
-    return next(new restify.InvalidArgumentError('age must be supplied'))
+    return next(new restify.InvalidArgumentError('price must be supplied'))
   }
   
-  var newpatient = {
+  var newproduct = {
 		_id: req.params.id,
-		name: req.params.name, 
-		age: req.params.age
+		product: req.params.product, 
+		price: req.params.price
 	}
   
-  // Update the patient with the persistence engine
-  patientsSave.update(newpatient, function (error, patient) {
+  // Update the product with the persistence engine
+  productsSave.update(newproduct, function (error, product) {
 
     // If there are any errors, pass them to next in the correct format
     if (error) return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)))
@@ -113,11 +122,11 @@ server.put('/patients/:id', function (req, res, next) {
   })
 })
 
-// Delete patient with the given id
-server.del('/patients/:id', function (req, res, next) {
+// Delete product with the given id
+server.del('/products/:id', function (req, res, next) {
 
-  // Delete the patient with the persistence engine
-  patientsSave.delete(req.params.id, function (error, patient) {
+  // Delete the product with the persistence engine
+  productsSave.delete(req.params.id, function (error, product) {
 
     // If there are any errors, pass them to next in the correct format
     if (error) return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)))
@@ -127,4 +136,19 @@ server.del('/patients/:id', function (req, res, next) {
   })
 })
 
+
+
+//Delete all products
+server.del('/products/', function (req, res, next) {
+  
+    // Delete the product with the persistence engine
+    productsSave.deleteMany(req.params.id, function (error, product) {
+  
+      // If there are any errors, pass them to next in the correct format
+      if (error) return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)))
+  
+      // Send a 200 OK response
+      res.send()
+    })
+  })
 
