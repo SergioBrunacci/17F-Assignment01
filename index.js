@@ -142,7 +142,7 @@ server.del('/products/:id', function (req, res, next) {
 server.del('/products/', function (req, res, next) {
   
     // Delete the product with the persistence engine
-    productsSave.deleteMany(req.params.id, function (error, product) {
+    productsSave.deleteMany({}, function (error, product) {
   
       // If there are any errors, pass them to next in the correct format
       if (error) return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)))
